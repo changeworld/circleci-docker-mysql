@@ -1,0 +1,19 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker run --detach --publish 13306:3306 --env MYSQL_ALLOW_EMPTY_PASSWORD=yes mysql:5.6
+    - mysqladmin --host=127.0.0.1 --port=13306 --user=root --wait ping
+    - docker run --detach --publish 13307:3306 --env MYSQL_ALLOW_EMPTY_PASSWORD=yes mysql:5.7
+    - mysqladmin --host=127.0.0.1 --port=13307 --user=root --wait ping
+
+test:
+  override:
+    - mysqladmin --host=127.0.0.1 --port=13306 --user=root version
+    - mysqladmin --host=127.0.0.1 --port=13307 --user=root version
+    - mysqlshow --host=127.0.0.1 --port=13306 --user=root
+    - mysqlshow --host=127.0.0.1 --port=13307 --user=root
+    - mysql --host=127.0.0.1 --port=13306 --user=root --execute "select now()"
+    - mysql --host=127.0.0.1 --port=13307 --user=root --execute "select now()"
